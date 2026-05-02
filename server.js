@@ -4,9 +4,13 @@ const path = require("path");
 
 const app = express();
 app.use(express.json());
-app.use(express.static("public"));
 
-// 🎯 Core function
+// ✅ Serve index.html from ROOT
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// 🎯 Crash logic
 function generateOutcome(serverSeed, clientSeed, nonce, houseEdge, slice, minMultiplier, maxMultiplier) {
     const hash = crypto
         .createHmac("sha512", serverSeed)
@@ -28,7 +32,7 @@ function generateOutcome(serverSeed, clientSeed, nonce, houseEdge, slice, minMul
     return multiplier.toFixed(2);
 }
 
-// 🚀 API endpoint
+// 🚀 API
 app.post("/generate", (req, res) => {
     const {
         houseEdge = 0.03,
@@ -51,13 +55,8 @@ app.post("/generate", (req, res) => {
         maxMultiplier
     );
 
-    res.json({
-        result,
-        serverSeed,
-        clientSeed,
-        nonce
-    });
+    res.json({ result });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Running on ${PORT}`));
