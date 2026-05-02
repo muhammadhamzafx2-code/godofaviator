@@ -1,58 +1,739 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Crash Generator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CRASH ENGINE — Provably Fair Multiplier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d;
+    --bg-elev: #111316;
+    --bg-card: #15181c;
+    --line: #22262c;
+    --line-bright: #2e333a;
+    --ink: #e9e6df;
+    --ink-dim: #8a8780;
+    --ink-faint: #4a4843;
+    --accent: #d4ff3a;
+    --accent-warm: #ffb84d;
+    --danger: #ff5b5b;
+    --gold: #c9a96e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Atmospheric grain + grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(212,255,58,0.05), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(255,184,77,0.04), transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .frame {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 40px 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--accent);
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 18px;
+    transform: rotate(-3deg);
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+
+  .logo-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  .logo-text strong {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-align: right;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  .meta .live {
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .meta .live::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* HERO SECTION */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .hero::before {
+    content: 'CRASH/01';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+  }
+
+  .display {
+    padding: 56px 48px;
+    border-right: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .display-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .display-tagline {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 14px;
+    margin-bottom: 40px;
+    max-width: 360px;
+    line-height: 1.5;
+  }
+
+  .display-tagline em {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .multiplier {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 168px;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    color: var(--ink);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-feature-settings: 'ss01';
+    position: relative;
+  }
+
+  .multiplier .x {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--accent);
+    font-size: 0.55em;
+    vertical-align: super;
+    margin-left: -6px;
+  }
+
+  .multiplier.idle {
+    color: var(--ink-faint);
+  }
+
+  .multiplier.danger {
+    color: var(--danger);
+  }
+
+  .multiplier.win {
+    color: var(--accent);
+  }
+
+  .multiplier.bonanza {
+    color: var(--gold);
+  }
+
+  .display-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--line-bright);
+  }
+
+  .stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+
+  .stat span {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg-card);
+  }
+
+  .controls-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-group label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .input-group input {
+    background: var(--bg);
+    border: 1px solid var(--line-bright);
+    color: var(--ink);
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent);
+    background: #0d0e10;
+  }
+
+  .input-group input::placeholder { color: var(--ink-faint); }
+
+  .button-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .button-row:hover {
+    box-shadow: 4px 4px 0 var(--accent);
+    transform: translate(-2px, -2px);
+  }
+
+  .button-row:active {
+    transform: translate(0, 0);
+    box-shadow: 0 0 0 var(--accent);
+  }
+
+  .button-row:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-generate {
+    flex: 1;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+
+  .btn-generate .arrow {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 300;
+  }
+
+  /* HISTORY SECTION */
+  .history-block {
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    position: relative;
+  }
+
+  .history-block::before {
+    content: 'LEDGER/05';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+  }
+
+  .history-header {
+    padding: 28px 40px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .history-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+  }
+
+  .history-title em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .history-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .history-item {
+    padding: 28px 20px 32px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .history-item:last-child { border-right: none; }
+
+  .history-item:hover {
+    background: var(--bg-card);
+  }
+
+  .history-item .pos {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+
+  .history-item .val {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .history-item .val .tx {
+    font-style: italic;
+    font-size: 0.5em;
+    color: var(--ink-faint);
+    margin-left: 2px;
+    font-weight: 400;
+  }
+
+  .history-item .time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  .history-item.empty .val { color: var(--ink-faint); opacity: 0.3; }
+  .history-item.empty .time { opacity: 0; }
+
+  .history-item .val.low { color: var(--danger); }
+  .history-item .val.mid { color: var(--ink); }
+  .history-item .val.high { color: var(--accent); }
+  .history-item .val.epic { color: var(--gold); }
+
+  .new-pulse {
+    animation: newEntry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes newEntry {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  footer a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 920px) {
+    .frame { padding: 24px 20px 40px; }
+    .hero { grid-template-columns: 1fr; }
+    .display { border-right: none; border-bottom: 1px solid var(--line); padding: 40px 28px; }
+    .controls { padding: 32px 28px; }
+    .multiplier { font-size: 110px; }
+    .history-grid { grid-template-columns: repeat(5, 1fr); }
+    .history-item { padding: 18px 8px 24px; }
+    .history-item .val { font-size: 24px; }
+    .history-header { padding: 22px 24px 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .meta { text-align: left; }
+  }
+
+  @media (max-width: 520px) {
+    .multiplier { font-size: 84px; }
+    .input-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 8px; align-items: flex-start; }
+  }
+</style>
 </head>
 <body>
+  <div class="frame">
 
-<h2>Crash Generator</h2>
+    <!-- HEADER -->
+    <header>
+      <div class="logo">
+        <div class="logo-mark">×</div>
+        <div class="logo-text">
+          <strong>CRASH ENGINE</strong>
+          PROVABLY FAIR · v1.0
+        </div>
+      </div>
+      <div class="meta">
+        <div class="live">SYSTEM ONLINE</div>
+        <div id="clock">—</div>
+      </div>
+    </header>
 
-<label>House Edge:</label>
-<input id="houseEdge" type="number" step="0.01" value="0.03"><br><br>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="display">
+        <div>
+          <div class="display-label">Latest Outcome</div>
+          <div class="display-tagline">A cryptographic dance of seeds and entropy — <em>your fortune, hashed.</em></div>
+        </div>
 
-<label>Volatility (Hex Length):</label>
-<input id="slice" type="number" value="8"><br><br>
+        <div class="multiplier idle" id="multiplier">
+          0.00<span class="x">×</span>
+        </div>
 
-<label>Min Multiplier:</label>
-<input id="minMultiplier" type="number" step="0.1" value="1"><br><br>
+        <div class="display-footer">
+          <div class="stat">Status<span id="status">Awaiting</span></div>
+          <div class="stat">Generated<span id="counter">0</span></div>
+          <div class="stat">House Edge<span id="edgeStat">3.00%</span></div>
+        </div>
+      </div>
 
-<label>Max Multiplier:</label>
-<input id="maxMultiplier" type="number" step="0.1" placeholder="optional"><br><br>
+      <div class="controls">
+        <div>
+          <div class="controls-title">// Configuration</div>
+          <div class="input-grid">
+            <div class="input-group">
+              <label>House Edge</label>
+              <input type="number" id="houseEdge" value="0.03" step="0.01" min="0" max="1">
+            </div>
+            <div class="input-group">
+              <label>Hash Slice</label>
+              <input type="number" id="slice" value="8" min="1" max="16">
+            </div>
+            <div class="input-group">
+              <label>Min Multiplier</label>
+              <input type="number" id="minMultiplier" value="1" step="0.1" min="0">
+            </div>
+            <div class="input-group">
+              <label>Max Multiplier</label>
+              <input type="number" id="maxMultiplier" placeholder="∞ unlimited" step="0.1">
+            </div>
+          </div>
+        </div>
 
-<button onclick="generate()">Generate</button>
-<button onclick="reset()">Reset</button>
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+          <span>Generate Outcome</span>
+          <span class="arrow">→</span>
+        </button>
+      </div>
+    </section>
 
-<h3 id="result"></h3>
+    <!-- HISTORY -->
+    <section class="history-block">
+      <div class="history-header">
+        <div class="history-title">Recent <em>Outcomes</em></div>
+        <div class="history-sub">Last 5 · Most Recent First</div>
+      </div>
+      <div class="history-grid" id="historyGrid">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <footer>
+      <div>© CRASH ENGINE · CRYPTOGRAPHICALLY VERIFIED</div>
+      <div>HMAC-SHA512 / SECURE RNG</div>
+    </footer>
+
+  </div>
 
 <script>
-function generate() {
-    fetch("/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            houseEdge: parseFloat(document.getElementById("houseEdge").value),
-            slice: parseInt(document.getElementById("slice").value),
-            minMultiplier: parseFloat(document.getElementById("minMultiplier").value),
-            maxMultiplier: document.getElementById("maxMultiplier").value
-                ? parseFloat(document.getElementById("maxMultiplier").value)
-                : null
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("result").innerText =
-            "Crash: " + data.result + "x";
-    });
-}
+  const history = [];
+  let counter = 0;
 
-function reset() {
-    document.getElementById("houseEdge").value = 0.03;
-    document.getElementById("slice").value = 8;
-    document.getElementById("minMultiplier").value = 1;
-    document.getElementById("maxMultiplier").value = "";
-    document.getElementById("result").innerText = "";
-}
+  // Live clock
+  function tickClock() {
+    const d = new Date();
+    const h = String(d.getUTCHours()).padStart(2, '0');
+    const m = String(d.getUTCMinutes()).padStart(2, '0');
+    const s = String(d.getUTCSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s} UTC`;
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  function classify(val) {
+    const v = parseFloat(val);
+    if (v < 1.5) return 'low';
+    if (v < 5) return 'mid';
+    if (v < 20) return 'high';
+    return 'epic';
+  }
+
+  function renderHistory() {
+    const grid = document.getElementById('historyGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+      const item = history[i];
+      const div = document.createElement('div');
+      if (!item) {
+        div.className = 'history-item empty';
+        div.innerHTML = `
+          <div class="pos">— ${String(i+1).padStart(2,'0')} —</div>
+          <div class="val">0.00<span class="tx">×</span></div>
+          <div class="time">—</div>
+        `;
+      } else {
+        const cls = classify(item.value);
+        div.className = 'history-item' + (i === 0 && item.fresh ? ' new-pulse' : '');
+        div.innerHTML = `
+          <div class="pos">— ${String(i+1).padStart(2,'0')} —</div>
+          <div class="val ${cls}">${item.value}<span class="tx">×</span></div>
+          <div class="time">${item.time}</div>
+        `;
+        item.fresh = false;
+      }
+      grid.appendChild(div);
+    }
+  }
+
+  async function generate() {
+    const btn = document.getElementById('generateBtn');
+    const multiplierEl = document.getElementById('multiplier');
+    const statusEl = document.getElementById('status');
+
+    btn.disabled = true;
+    statusEl.textContent = 'Computing';
+    multiplierEl.classList.add('idle');
+
+    const houseEdge = parseFloat(document.getElementById('houseEdge').value) || 0.03;
+    const slice = parseInt(document.getElementById('slice').value) || 8;
+    const minMultiplier = parseFloat(document.getElementById('minMultiplier').value) || 1;
+    const maxRaw = document.getElementById('maxMultiplier').value;
+    const maxMultiplier = maxRaw ? parseFloat(maxRaw) : null;
+
+    document.getElementById('edgeStat').textContent = (houseEdge * 100).toFixed(2) + '%';
+
+    try {
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ houseEdge, slice, minMultiplier, maxMultiplier })
+      });
+      const data = await res.json();
+      const result = data.result;
+
+      // animate
+      multiplierEl.classList.remove('idle', 'danger', 'win', 'bonanza');
+      const v = parseFloat(result);
+      if (v < 1.5) multiplierEl.classList.add('danger');
+      else if (v < 10) multiplierEl.classList.add('win');
+      else multiplierEl.classList.add('bonanza');
+
+      multiplierEl.innerHTML = `${result}<span class="x">×</span>`;
+
+      counter++;
+      document.getElementById('counter').textContent = String(counter).padStart(3, '0');
+      statusEl.textContent = 'Resolved';
+
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+      history.unshift({ value: result, time, fresh: true });
+      if (history.length > 5) history.pop();
+      renderHistory();
+
+    } catch (err) {
+      statusEl.textContent = 'Error';
+      multiplierEl.innerHTML = `ERR<span class="x">!</span>`;
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  renderHistory();
 </script>
-
 </body>
 </html>
