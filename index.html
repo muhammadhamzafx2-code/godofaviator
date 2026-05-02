@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crash Generator</title>
+</head>
+<body>
+
+<h2>Crash Generator</h2>
+
+<label>House Edge:</label>
+<input id="houseEdge" type="number" step="0.01" value="0.03"><br><br>
+
+<label>Volatility (Hex Length):</label>
+<input id="slice" type="number" value="8"><br><br>
+
+<label>Min Multiplier:</label>
+<input id="minMultiplier" type="number" step="0.1" value="1"><br><br>
+
+<label>Max Multiplier:</label>
+<input id="maxMultiplier" type="number" step="0.1" placeholder="optional"><br><br>
+
+<button onclick="generate()">Generate</button>
+<button onclick="reset()">Reset</button>
+
+<h3 id="result"></h3>
+
+<script>
+function generate() {
+    fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            houseEdge: parseFloat(document.getElementById("houseEdge").value),
+            slice: parseInt(document.getElementById("slice").value),
+            minMultiplier: parseFloat(document.getElementById("minMultiplier").value),
+            maxMultiplier: document.getElementById("maxMultiplier").value
+                ? parseFloat(document.getElementById("maxMultiplier").value)
+                : null
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("result").innerText =
+            "Crash: " + data.result + "x";
+    });
+}
+
+function reset() {
+    document.getElementById("houseEdge").value = 0.03;
+    document.getElementById("slice").value = 8;
+    document.getElementById("minMultiplier").value = 1;
+    document.getElementById("maxMultiplier").value = "";
+    document.getElementById("result").innerText = "";
+}
+</script>
+
+</body>
+</html>
